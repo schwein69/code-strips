@@ -1,0 +1,59 @@
+objects:
+
+oncar/2
+
+actions:
+jump_on/1
+jump_off/1
+drive_to/2
+
+
+at/2
+
+car_at/1
+
+
+road/2
+
+
+
+action(
+    jump_off(Person),
+    if[at(Person,Location), cat_at(Location),oncar(Person)],
+    +[offcar(Person)],
+    -[oncar(Person)]
+)
+
+action(
+    drive_to(SrcLocation, DstLocation),
+    if[
+        oncar(alice),
+        car_at(SrcLocation),
+        at(alice, SrcLocation),
+        road(SrcLocation, DstLocation)
+    ],
+    +[car_at[DstLocation], at(alice,DstLocation)],
+    -[car_at[SrcLocation], at(alice,SrcLocation)]
+)
+
+
+S_i = {
+    at(alice,home),
+    at(bob,home),
+    car_at(home),
+    offcar(alice),
+    offcar(bob),
+    road(home, ),
+    road(home, ),
+    road(home, ),
+    road(home, ),
+    road(home, )
+}
+
+action(
+    drive_from_home_to_market,
+    if[
+        oncar(alice),
+        car_at(home),
+        at(alice,)]
+)

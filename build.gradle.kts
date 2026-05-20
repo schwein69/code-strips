@@ -1,5 +1,9 @@
 import java.util.Locale;
 
+kotlin {
+    jvmToolchain(21)
+}
+
 plugins {
     alias(libs.plugins.kotlin.jvm)
 }
