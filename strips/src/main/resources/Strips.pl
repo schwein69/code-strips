@@ -13,18 +13,23 @@ strips_impl(State, Goal, Plan, _, State, Plan) :-
 
 strips_impl(State, Goal, Plan, BadActions, FinalState, FinalPlan) :-
     write("Need to reach "), write(Goal), write(" from "), write(State), indent, newline,
-    /* TODO select an unsatisfied SubGoal in Goal */
+    write (" without using "), write ( BadActions ), indent , newline ,
+    SubGoal in Goal,
+    not SubGoal in State,
     write('Attempting goal:  '), write(SubGoal), newline,
-    /* TODO select an Action which may produce SubGoal */
-    write('Choosing Action:  '), write(Action),
+    action(SelectedAction, 'if'(PrecList), '+'(AddList), _, _),
+    member(SubGoal, AddList),
+    write('Choosing Action:  '), write(SelectedAction),
     /* TODO ensure the selected Action is not blacklisted */
+    not member(SelectedAction, BadActions),
     write(' -- not a bad action.'), newline,
-    write('Need to satisfy preconditions of '), write(Action), write(", that are: "), write(PrecList), newline,
-    /* TODO check if Action can be applied to the current state */
+    write('Need to satisfy preconditions of '), write(SelectedAction), write(", that are: "), write(PrecList), newline,
+    /* TODO check if SelectedAction can be applied to the current state */
     /* TODO if not, find a SubPlan making Action applicable, __blacklisting Action__ */
     /* TODO if such a SubPlan exists, let TmpState be the state reached by applying SubPlan to State */
-    apply(TmpState, Action, NewState),
-    strips_impl(NewState, Goal, [Action | TmpPlan], BadActions, FinalState, FinalPlan).
+    strips_impl(State, Preconditions, Plan, [SelectedAction | BadActions], TmpState, SubPlan),
+    apply(TmpState, SelectedAction, NewState),
+    strips_impl(NewState, Goal, [SelectedAction | TmpPlan], BadActions, FinalState, FinalPlan).
 
 strips_impl(_, _, _, _, _) :-
     unindent, !, fail.
