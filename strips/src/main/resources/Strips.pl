@@ -15,13 +15,13 @@ strips_impl(State, Goal, Plan, BadActions, FinalState, FinalPlan) :-
     write("Need to reach "), write(Goal), write(" from "), write(State), indent, newline,
     write (" without using "), write ( BadActions ), indent , newline ,
     SubGoal in Goal,
-    not SubGoal in State,
+    not(SubGoal in State),
     write('Attempting goal:  '), write(SubGoal), newline,
     action(SelectedAction, 'if'(PrecList), '+'(AddList), _, _),
-    in(SubGoal, AddList),
+    member(SubGoal, AddList),
     write('Choosing Action:  '), write(SelectedAction),
     /* TODO ensure the selected Action is not blacklisted */
-    not lists:member(SelectedAction, BadActions),
+    not(member(SelectedAction, BadActions)),
     write(' -- not a bad action.'), newline,
     write('Need to satisfy preconditions of '), write(SelectedAction), write(", that are: "), write(PrecList), newline,
     /* TODO check if SelectedAction can be applied to the current state */
