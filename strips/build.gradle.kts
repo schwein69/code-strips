@@ -58,3 +58,4 @@ tasks.register<JavaExec>("run") {
         println("Running `${mainClass.get()}` with arguments `${arguments.joinToString(" ")}`")
     }
 }
+

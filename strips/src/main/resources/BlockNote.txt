@@ -1,0 +1,154 @@
+---------------
+| BLOCK WORLD |
+---------------
+
+---STATE MODELING---
+
+objects: blocks (a, b, c, ...)
+
+ontable/1
+clear/1 --> nothing on top
+holding/1 --> block holded by the hand
+on/2 --> the first is on top of the second
+handfree/0 --> statement (can be true/false). Necessary because in STRIPS there is no negation
+
+S_i = {on(a, c), ontable(b), ontable(c), clear(a), clear(b), holding(d)}
+
+G = {on(a, d), on(d, b), ontable(b)}
+
+---ACTIONS---
+
+pick(X) --> from the table
+action (
+    pick(X),
+    if([ontable(X), clear(X), handfree]),
+    '+'([holding(X)]),
+    '-'([clear(X), ontable(X), handfree])
+).
+
+unstack(X, Y) --> from another block
+action (
+    unstack(X, Y),
+    if([on(X, Y), clear(X), handfree]),
+    '+'([clear(Y), holding(X)]),
+    '-'([clear(X), on(X, Y), handfree])
+).
+
+put(X) --> put on the table
+action (
+    put(X),
+    if([holding(X)]),
+    '+'([ontable(X), clear(X), handfree]),
+    '-'([holding(X)])
+).
+
+stack(X, Y) --> putting X on top of Y
+action (
+    stack(X, Y), --> name
+    if([clear(Y), holding(X)]), --> pre-conditions
+    '+'([on(X, Y) , clear(X), handempty]), --> positive post-conditions (add list)
+    '-'([clear(Y), holding(X)]) --> negative post-conditions (delete list)
+).
+
+------------------------
+| ALICE AND BOB'S CITY |
+------------------------
+
+---STATE MODELING---
+
+objects:
+    people: alice, bob
+    locations: work, home, school, market
+
+road/2(?):
+    - road(home, market)
+    - road(market, work)
+    - road(work, market)
+    - road(work, school)
+    - road(school, home)
+    - road(home, school)
+
+oncar/1:
+    - oncar(alice)
+    - oncar(bob)
+
+offcar/1:
+    - offcar(alice)
+    - offcar(bob)
+
+caremtpy/0:
+    - carempty
+
+at/2:
+    - at(Person, Location)
+
+car_at/1(?):
+    - car_at(Location)
+
+---ACTIONS---
+
+jump_on(Person)
+action (
+    jump_on(Person),
+    if [at(Person, Location), car_at(Location), offcar(Person)],
+    + [oncar(Person)],
+    - [offcar(Person)]
+).
+
+jump_off(Person)
+action (
+    jump_off(Person),
+    if [at(Person, Location), car_at(Location), oncar(Person)],
+    + [offcar(Person)],
+    - [oncar(Person)]
+).
+
+/* If we don't use the road state we can't have the drive_to with the pair of locations (easier),
+but need a drive action for road (more efficient). */
+drive_to(Location, Location)
+action (
+    drive_to(SrcLocation, DstLocation),
+    if [
+        oncar(alice),
+        car_at(SrcLocation),
+        at(alice, SrcLocation),
+        road(SrcLocation, DstLocation)
+    ],
+    + [car_at(DstLocation), at(alice, DstLocation)],
+    - [car_at(SrcLocation), at(alice, SrcLocation)]
+).
+
+S_i = {
+    at(alice, home),
+    at(bob, home),
+    car_at(home),
+    offcar(alice),
+    offcar(bob),
+    road(home, market)
+    road(market, work)
+    road(work, market)
+    road(work, school)
+    road(school, home)
+    road(home, school)
+}
+
+/* ALTERNATIVE */
+drive_from_home_to_market
+action (
+    drive_from_home_to_market,
+    if [
+        oncar(alice),
+        car_at(home),
+        at(alice, home)
+    ],
+    + [car_at(market), at(alice, market)],
+    - [car_at(home), at(alice, home)]
+).
+
+S_i = {
+    at(alice, home),
+    at(bob, home),
+    car_at(home),
+    offcar(alice),
+    offcar(bob)
+}

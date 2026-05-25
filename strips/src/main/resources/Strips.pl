@@ -18,31 +18,31 @@ strips_impl(State, Goal, Plan, BadActions, FinalState, FinalPlan) :-
     not SubGoal in State,
     write('Attempting goal:  '), write(SubGoal), newline,
     action(SelectedAction, 'if'(PrecList), '+'(AddList), _, _),
-    member(SubGoal, AddList),
+    in(SubGoal, AddList),
     write('Choosing Action:  '), write(SelectedAction),
     /* TODO ensure the selected Action is not blacklisted */
-    not member(SelectedAction, BadActions),
+    not lists:member(SelectedAction, BadActions),
     write(' -- not a bad action.'), newline,
     write('Need to satisfy preconditions of '), write(SelectedAction), write(", that are: "), write(PrecList), newline,
     /* TODO check if SelectedAction can be applied to the current state */
     /* TODO if not, find a SubPlan making Action applicable, __blacklisting Action__ */
     /* TODO if such a SubPlan exists, let TmpState be the state reached by applying SubPlan to State */
-    strips_impl(State, Preconditions, Plan, [SelectedAction | BadActions], TmpState, SubPlan),
+    strips_impl(State, PrecList, Plan, [SelectedAction | BadActions], TmpState, TmpPlan),
     apply(TmpState, SelectedAction, NewState),
-    strips_impl(NewState, Goal, [SelectedAction | TmpPlan], BadActions, FinalState, FinalPlan).
+    strips_impl(NewState, Goal,[SelectedAction | TmpPlan], BadActions, FinalState, FinalPlan).
 
-strips_impl(_, _, _, _, _) :-
+strips_impl(_, _, _, _, _, _) :-
     unindent, !, fail.
 
 apply(State, Action, NewState) :-
     write('Simulating '), write(Action), newline,
     write('Transition: '), write(State),
-    % TODO get the post-conditions (AddList + DelList), pre-conditions (PrecList), and Conditions of Action
+    action(Action, 'if'(PrecList), '+'(AddList), '-'(DelList), where(Conditions)),
+    subseteq(PrecList, State),
+    call(Conditions),
     write(' - '), write(DelList),
-    % TODO remove the negative post-conditions (DelList) from State
+    difference(State, DelList, TmpState),
     write(" + "),
-    % TODO ensure all the pre-conditions are satisfied by State
-    % TODO perform any additional computation in Conditions
     write(AddList), write(" = "),
-    % TODO add the positive post-conditions (AddList) from State
+    union(AddList, TmpState, NewState),
     write(NewState), newline.
